@@ -60,7 +60,7 @@ const TokenSubmit: React.FC = () => {
     data.append("totalSupply", formData.supply);
     data.append("decimals", formData.decimals.toString());
     data.append("proposalTitle", "");
-    data.append("proposalStatus", "LAUNCHED")
+    data.append("proposalStatus", "PENDING")
     data.append("proposalDesc", formData.description);
     data.append("periodId", "1");
     if (formData.tokenomics) {
@@ -80,8 +80,6 @@ const TokenSubmit: React.FC = () => {
       },
       data: data,
     };
-
-    await axios.request(config);
 
     try {
       const response = await axios.request(config);

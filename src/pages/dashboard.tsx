@@ -13,11 +13,12 @@ import Box from "@mui/material/Box";
 
 import { toast } from "react-toastify";
 import { checkMintAddress, getDecimals } from "../utils/WebIntegration";
-import { createVToken } from "../api/apis";
+import { createTokenPair, createVToken, createVotePeriod } from "../api/apis";
 import { JwtTokenContext } from "../contexts/JWTTokenProvider";
 import { getProjects } from "../api/apis";
 
 interface Token {
+  id: number;
   name: string;
   weight: number;
   minVoteAmount: string;
@@ -34,6 +35,7 @@ interface Project {
 };
 
 const Dashboard = () => {
+  const [projectId, setProjectId] = useState<number>(0);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
   const [passScore, setPassScore] = useState<number>(0);
@@ -74,13 +76,31 @@ const Dashboard = () => {
     e.preventDefault();
     // Logic to handle form submission
 
+    console.log("@@@@@@@@@@@@@@@", projectId, fromDate, toDate, tokens, passScore)
+
+    const response = await createVotePeriod(jwtToken, projectId, fromDate, toDate, "", passScore);
+    if (response.success == false) {
+      toast.error("Create Vote Period error!");
+      return;
+    }
+
+    if ( !response.period )
+      return;
+
+    const period = response.period;
+    for (let i = 0; i < tokens.length; i++) {
+
+      const res = await createTokenPair(jwtToken, period.id, tokens[i].id, tokens[i].weight);
+      if (res.success == false) {
+        toast.error("Create TokenPair error!");
+        return;
+      }
+    }
   };
 
-  const handleProjectSelect = (e: React.FormEvent) => {
+  const handleProjectSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
-
-    console.log("##############", projects)
-    console.log("@@@@@@@@@@@@", e.target);
+    setProjectId(parseInt(e.target.value));
   }
 
   const handleTokenRegister = async (e: React.FormEvent) => {
@@ -182,9 +202,11 @@ const Dashboard = () => {
               defaultValue="Select Project"
             >
               <option disabled>Select Project</option>
-              {projects.map((e) => (
-                <option key={e.id} value={e.name}>{e.name}</option>
-              ))}
+              {projects.map((e) => {
+                if ( e.proposalStatus === "PENDING" )
+                  return <option value={e.id}>{e.name}</option>;
+                return null;
+              })}
             </select>
             <h2 className="my-4 mb-4 text-2xl text-left font-primaryBold text-textclr2">
               Period
@@ -312,9 +334,9 @@ const Dashboard = () => {
             <h2 className="mb-4 text-4xl text-center font-primaryBold text-textclr2">
               Applications
             </h2>
-            <h2 className="mb-4 text-2xl text-left font-primaryBold text-textclr2">
-              Vote 1
-            </h2>
+            {/* <h2 className="mb-4 text-2xl text-left font-primaryBold text-textclr2"> */}
+              {/* Vote 1 */}
+            {/* </h2> */}
             {/* Table Component */}
             <div className="overflow-x-auto">
               <table className="table text-textclr2">
@@ -327,26 +349,28 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="font-primaryRegular">
-                  {tokens.map((token, index) => (
-                    <tr>
-                      {/* id change as needed */}
-                      <td>{index + 1}</td>
-                      <td>{token.name}</td>
-                      <td>{token.name}</td> {/* Description change as needed */}
-                      <td>
-                        <button className="text-white rounded-md shadow-sm btn bg-textclr2/70 font-primaryRegular hover:bg-textclr2/30 btn-sm ">
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {projects.map((project, index) => {
+                    if ( project.proposalStatus === "VOTING" ) {
+                      return <tr>
+                        {/* id change as needed */}
+                        <td>{index + 1}</td>
+                        <td>{project.name}</td>
+                        <td>{project.proposalDesc}</td> {/* Description change as needed */}
+                        <td>
+                          <button className="text-white rounded-md shadow-sm btn bg-textclr2/70 font-primaryRegular hover:bg-textclr2/30 btn-sm ">
+                            Cancel
+                          </button>
+                        </td>
+                      </tr>
+                    } else return null;
+                  })}
                 </tbody>
               </table>
-              <h2 className="pt-12 mb-4 text-2xl text-left font-primaryBold text-textclr2">
-                Vote 2
-              </h2>
+              {/* <h2 className="pt-12 mb-4 text-2xl text-left font-primaryBold text-textclr2"> */}
+                {/* Vote 2 */}
+              {/* </h2> */}
               {/* Table Component */}
-              <div className="overflow-x-auto">
+              {/* <div className="overflow-x-auto">
                 <table className="table text-textclr2">
                   <thead>
                     <tr className="text-2xl font-primaryBold text-textclr2">
@@ -359,11 +383,9 @@ const Dashboard = () => {
                   <tbody className="font-primaryRegular">
                     {tokens.map((token, index) => (
                       <tr>
-                        {/* id change as needed */}
                         <td>{index + 1}</td>
                         <td>{token.name}</td>
                         <td>{token.name}</td>{" "}
-                        {/* Description change as needed */}
                         <td>
                           <button
                             onClick={() => openEditTokenModal()}
@@ -382,7 +404,7 @@ const Dashboard = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div> */}
             </div>
           </motion.div>
         )}

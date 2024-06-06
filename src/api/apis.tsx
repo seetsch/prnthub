@@ -80,3 +80,58 @@ export const createVToken = async (jwtToken: string | null, name: string, mint: 
         return { success: false };
     }
 };
+
+export const createVotePeriod = async (jwtToken: string | null, projectId: number, startAt: string, endAt: string , votingtitle: string, votePowerLimit: number) => {
+  const data = {
+      'projectId': projectId,
+      'startAt': new Date(startAt).toISOString(),
+      'endAt': new Date(endAt).toISOString(),
+      'votingtitle': votingtitle,
+      'votePowerLimit': votePowerLimit
+  };
+
+  console.log("data = ", data);
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: "https://api.prnthub.com/period",
+    headers: {
+      "Authorization": "Bearer " + jwtToken,
+      "Content-Type": "application/json"
+    },
+    data: data,
+  };
+
+  try {
+      const response = await axios.request(config);
+      return { success: true, period: response.data }
+  } catch (error) {
+      return { success: false };
+  }
+};
+
+export const createTokenPair = async (jwtToken: string | null, periodId: number, voteTokenId: number , weight: number) => {
+  const data = {
+      'periodId': periodId,
+      'voteTokenId': voteTokenId,
+      'weight': weight,
+  };
+
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: "https://api.prnthub.com/tokenpair",
+    headers: {
+      "Authorization": "Bearer " + jwtToken,
+      "Content-Type": "application/json"
+    },
+    data: data,
+  };
+
+  try {
+      await axios.request(config);
+      return { success: true }
+  } catch (error) {
+      return { success: false };
+  }
+};
