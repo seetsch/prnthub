@@ -21,7 +21,7 @@ interface Token {
   id: number;
   name: string;
   weight: number;
-  minVoteAmount: string;
+  minVoteAmount: number;
 }
 
 interface Project {

@@ -8,7 +8,7 @@ interface ModalProps {
     id: number;
     name: string;
     weight: number;
-    minVoteAmount: string;
+    minVoteAmount: number;
   }) => void;
 }
 
@@ -21,7 +21,7 @@ const Modal: React.FC<ModalProps> = ({ closeModal, addToken }) => {
   const [id, setId] = useState<number>(0);
   const [name, setName] = useState<string>("");
   const [weight, setWeight] = useState<number>(0);
-  const [minVoteAmount, setMinVoteAmount] = useState("");
+  const [minVoteAmount, setMinVoteAmount] = useState(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const [vTokens, setVTokens] = useState<VoteToken[]>([]);
@@ -115,7 +115,7 @@ const Modal: React.FC<ModalProps> = ({ closeModal, addToken }) => {
             <input
               type="number"
               value={minVoteAmount}
-              onChange={(e) => setMinVoteAmount(e.target.value)}
+              onChange={(e) => setMinVoteAmount(parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-textclr2 focus:border-textclr2 sm:text-sm"
             />
           </div>
