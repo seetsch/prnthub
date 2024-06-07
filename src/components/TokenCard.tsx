@@ -3,16 +3,18 @@ import PollIcon from "@mui/icons-material/Poll";
 import Modal from "./ModalVote";
 
 interface TokenCardProps {
+  projectId: number;
   projectLogo: string;
   projectName: string;
   projectDesc: string;
   socials: string[];
-  status: "Active" | "Completed";
+  status: "PENDING" | "VOTING" | "APPROVED" | "LAUNCHED" | "DECLINED" ;
   startAt: string;
   endAt: string;
 }
 
 const TokenCard: React.FC<TokenCardProps> = ({
+  projectId,
   projectLogo,
   projectName,
   projectDesc,
@@ -22,6 +24,17 @@ const TokenCard: React.FC<TokenCardProps> = ({
   endAt
 }) => {
   const [showModal, setShowModal] = useState(false);
+
+  let bgStyle = "bg-[#AAAAAA] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular";
+  if ( status === "VOTING" )
+    bgStyle = "bg-[#34D399] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular"
+  else if ( status === "APPROVED" )
+    bgStyle = "bg-[#3333FF] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular"
+  else if ( status === "LAUNCHED" )
+    bgStyle = "bg-[#33FFFF] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular"
+  else if ( status === "DECLINED" )
+    bgStyle = "bg-[#FF3333] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular"
+
 
   return (
     <div className="relative flex flex-col justify-between p-4 mx-4 border rounded-lg shadow-2xl min-h-[20rem] border-textclr2 card bg-white/10">
@@ -36,11 +49,7 @@ const TokenCard: React.FC<TokenCardProps> = ({
         </div>
         <div className="flex-1" />
         <div
-          className={`text-sm px-2 py-1 ml-[130px] border-textclr2 border-2 rounded-full ${
-            status === "Active"
-              ? "bg-[#34D399] hover:bg-textclr2 cursor-progress text-slate-700/90 font-primaryRegular"
-              : " bg-[#1E40AF] hover:bg-indigo-300 cursor-progress text-textclr font-primaryRegular"
-          }`}
+          className={`text-sm px-2 py-1 ml-[130px] border-textclr2 border-2 rounded-full ${bgStyle}`}
         >
           {status}
         </div>
@@ -97,12 +106,15 @@ const TokenCard: React.FC<TokenCardProps> = ({
         ))}
       </div>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={() => { 
+          if ( status === "VOTING" )
+            setShowModal(true)
+        }}
         className="py-2 mt-4 tracking-wider rounded-md btn text-slate-700/90 font-primaryBold bg-textclr2/60 hover:bg-textclr2/90 focus:outline-none focus:bg-textclr2"
       >
         Vote
       </button>
-      {showModal && <Modal setShowModal={setShowModal} />}
+      {showModal && <Modal setShowModal={setShowModal} projectId={projectId} />}
     </div>
   );
 };

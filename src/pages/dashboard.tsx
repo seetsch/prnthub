@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import * as React from "react";
 import { motion } from "framer-motion";
 import Modal from "../components/Modal";
-import EditModal from "../components/TokenRegisterModal";
+// import EditModal from "../components/TokenRegisterModal";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import PollIcon from "@mui/icons-material/Poll";
@@ -47,8 +47,8 @@ const Dashboard = () => {
 
   const { jwtToken } = useContext(JwtTokenContext);
 
-  const [isEditTokenModalOpen, setIsEditTokenModalOpen] =
-    useState<boolean>(false);
+  // const [isEditTokenModalOpen, setIsEditTokenModalOpen] =
+    // useState<boolean>(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -90,7 +90,7 @@ const Dashboard = () => {
     const period = response.period;
     for (let i = 0; i < tokens.length; i++) {
 
-      const res = await createTokenPair(jwtToken, period.id, tokens[i].id, tokens[i].weight);
+      const res = await createTokenPair(jwtToken, period.id, tokens[i].id, tokens[i].weight, tokens[i].minVoteAmount);
       if (res.success == false) {
         toast.error("Create TokenPair error!");
         return;
@@ -140,13 +140,13 @@ const Dashboard = () => {
     setTokens(newTokens);
   };
 
-  const openEditTokenModal = () => {
-    setIsEditTokenModalOpen(true);
-  };
+  // const openEditTokenModal = () => {
+    // setIsEditTokenModalOpen(true);
+  // };
 
-  const closeEditTokenModal = () => {
-    setIsEditTokenModalOpen(false);
-  };
+  // const closeEditTokenModal = () => {
+    // setIsEditTokenModalOpen(false);
+  // };
 
   return (
     <motion.div className="flex min-h-screen p-4 bg-radial-gradient">

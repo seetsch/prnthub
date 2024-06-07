@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getVTokens } from "../api/apis";
 
+import { useWallet } from "@solana/wallet-adapter-react";
+import { createVote } from "../utils/WebIntegration";
+import { createVoteApi } from "../api/apis";
+import { JwtTokenContext } from "../contexts/JWTTokenProvider";
+
 interface ModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  projectId: number;
 }
 
 interface VoteToken {
@@ -14,14 +20,15 @@ interface VoteToken {
   decimals: number
 };
 
-const ModalVote: React.FC<ModalProps> = ({ setShowModal }) => {
+const ModalVote: React.FC<ModalProps> = ({ setShowModal, projectId }) => {
   const [voteAmount, setVoteAmount] = useState("");
-  const [id, setId] = useState<number>(0);
-  const [name, setName] = useState<string>("");
   const [tokenMint, setTokenMint] = useState<string>("");
   const [decimals, setDecimals] = useState<number>(0);
 
   const [vTokens, setVTokens] = useState<VoteToken[]>([]);
+  const wallet = useWallet();
+
+  const { jwtToken } = useContext(JwtTokenContext);
 
   useEffect(() => {
     const fetchVTokens = async () => {
@@ -44,28 +51,17 @@ const ModalVote: React.FC<ModalProps> = ({ setShowModal }) => {
   const handleVTokenSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
 
-    const pid = e.target.value;
-    const vtoken = vTokens.filter((e) => (e.id === parseInt(pid)));
+    const tokenid = e.target.value;
+    const vtoken = vTokens.filter((e) => (e.id === parseInt(tokenid)));
 
     if (vtoken) {
-      setId(parseInt(pid));
-      setName(vtoken[0].name);
       setTokenMint(vtoken[0].tokenMint);
       setDecimals(vtoken[0].decimals);
     }
   }
 
-  const handleSubmit = () => {
-    if (voteAmount) {
-      toast.success("Vote submitted successfully!", {
-        position: "bottom-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        theme: "dark",
-      });
-    } else {
+  const handleSubmit = async () => {
+    if (!voteAmount) {
       toast.error("Please enter a vote amount.", {
         position: "bottom-center",
         autoClose: 5000,
@@ -76,7 +72,26 @@ const ModalVote: React.FC<ModalProps> = ({ setShowModal }) => {
       });
     }
 
-    console.log("@@@@@@@@@@@@", id, name, tokenMint, decimals);
+    const txHash = await createVote(tokenMint, wallet, 'HRD7gyMZwkQ65uFgvYmoxrmxdW1KjRCa9g9uRiw5RBoj', parseInt(voteAmount) * Math.pow(10, decimals))
+    if (!txHash) {
+      toast.error("Vote failed(transaction)!");
+      return;
+    }
+    
+    const response = await createVoteApi(jwtToken, txHash, projectId, parseInt(voteAmount));
+    if (response.success == false) {
+      toast.error("Create Vote error!");
+      return;
+    }
+
+    toast.success("Vote submitted successfully!", {
+      position: "bottom-center",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      theme: "dark",
+    });
 
     setShowModal(false);
   };

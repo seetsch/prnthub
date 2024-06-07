@@ -9,6 +9,7 @@ import { Drawer } from "vaul";
 import { getPeriods, getProjects } from "../api/apis";
 
 interface Project {
+  id: number,
   periodId: number,
   logoURL: string,
   name: string,
@@ -35,6 +36,7 @@ const VoteList = () => {
           if ( !period )
             return null;
           return {
+            id: e.id,
             logoURL: e.logoURL,
             name: e.name,
             proposalDesc: e.proposalDesc,
@@ -56,11 +58,17 @@ const VoteList = () => {
 
   // Sort projects based on status
   const filteredProjects = projects.filter((project) => {
-    if (sortOrder === "active") {
-      return project.proposalStatus === "Active";
-    } else if (sortOrder === "completed") {
-      return project.proposalStatus === "Completed";
+    if (sortOrder === "VOTING") {
+      return project.proposalStatus === "VOTING";
+    } else if (sortOrder === "APPROVED") {
+      return project.proposalStatus === "APPROVED";
+    } else if (sortOrder === "LAUNCHED") {
+      return project.proposalStatus === "LAUNCHED";
+    } else if (sortOrder === "DECLINED") {
+      return project.proposalStatus === "DECLINED";
     } else {
+      if ( project.proposalStatus === "PENDING" )
+        false
       return true; // Default to show all projects
     }
   });
@@ -101,25 +109,49 @@ const VoteList = () => {
                   <li>
                     <button
                       className={`w-full text-left ${
-                        sortOrder === "active"
+                        sortOrder === "VOTING"
                           ? "text-textclr"
                           : "text-textclr2"
                       }`}
-                      onClick={() => handleSort("active")}
+                      onClick={() => handleSort("VOTING")}
                     >
-                      <EventIcon className="inline mr-2" /> Active
+                      <EventIcon className="inline mr-2" /> VOTING
                     </button>
                   </li>
                   <li>
                     <button
                       className={`w-full text-left ${
-                        sortOrder === "completed"
+                        sortOrder === "APPROVED"
                           ? "text-textclr"
                           : "text-textclr2"
                       }`}
-                      onClick={() => handleSort("completed")}
+                      onClick={() => handleSort("APPROVED")}
                     >
-                      <EventAvailableIcon className="inline mr-2" /> Completed
+                      <EventAvailableIcon className="inline mr-2" /> APPROVED
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`w-full text-left ${
+                        sortOrder === "LAUNCHED"
+                          ? "text-textclr"
+                          : "text-textclr2"
+                      }`}
+                      onClick={() => handleSort("LAUNCHED")}
+                    >
+                      <EventAvailableIcon className="inline mr-2" /> LAUNCHED
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`w-full text-left ${
+                        sortOrder === "DECLINED"
+                          ? "text-textclr"
+                          : "text-textclr2"
+                      }`}
+                      onClick={() => handleSort("DECLINED")}
+                    >
+                      <EventAvailableIcon className="inline mr-2" /> DECLINE
                     </button>
                   </li>
                   <li>
@@ -147,11 +179,12 @@ const VoteList = () => {
                   return null;
                 return <TokenCard
                   key={index}
+                  projectId={project.id}
                   projectName={project.name}
                   projectLogo={project.logoURL}
                   projectDesc={project.proposalDesc}
                   socials={project.socials}
-                  status={project.proposalStatus as "Active" | "Completed"}
+                  status={project.proposalStatus as "PENDING" | "VOTING" | "APPROVED" | "LAUNCHED" | "DECLINED"}
                   startAt={project.startAt}
                   endAt={project.endAt}
                 />
