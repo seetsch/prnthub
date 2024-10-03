@@ -28,6 +28,12 @@ import { web3 } from "@project-serum/anchor";
 import { NETWORK, RPC_ENDPOINT } from '../config'
 import axios from "axios";
 
+import AmmImpl from '@mercurial-finance/dynamic-amm-sdk';
+import { SEEDS, PROGRAM_ID as AMM_PROGRAM_ID } from '@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/constants';
+import { getAssociatedTokenAccount } from '@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/utils';
+import { derivePoolAddressWithConfig as deriveConstantProductPoolAddressWithConfig } from '@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/utils';
+
+
 const RPC_URL: string = (NETWORK == 'devnet') ? 'https://api.devnet.solana.com' : RPC_ENDPOINT;
 
 export function getOpenbookData() {
@@ -559,7 +565,7 @@ export async function createOpenBookMarket(
   const [baseMintAccountInfo, quoteMintAccountInfo] = await solConnection.getMultipleAccountsInfo([baseMint, quoteMint])
   let baseMintDecimals: number;
   let quoteMintDecimals: number;
-  if (!baseMintAccountInfo || !quoteMintAccountInfo) 
+  if (!baseMintAccountInfo || !quoteMintAccountInfo)
     return {
       status: 'failed',
       txids: [],
@@ -596,7 +602,7 @@ export async function createOpenBookMarket(
       programId: programID,
     })
   );
-  
+
   // create request queue
   marketInstructions.push(
     SystemProgram.createAccount({
@@ -710,290 +716,8 @@ export async function createOpenBookMarket(
       address: '',
     };
   }
-
-
-  // const marketLamports = await solConnection.getMinimumBalanceForRentExemption(Market.getLayout(programId).span);
-  // const eventLamports = await solConnection.getMinimumBalanceForRentExemption(eventQueueLength);
-  // const requestLamports = await solConnection.getMinimumBalanceForRentExemption(requestQueueLength);
-  // const orderLamports = await solConnection.getMinimumBalanceForRentExemption(orderbookLength);
-  // const vaultLamports = await solConnection.getMinimumBalanceForRentExemption(165);
-
-  // if (!marketLamports || !eventLamports || !requestLamports || !orderLamports || !vaultLamports)
-  //   return {
-  //     status: 'failed',
-  //     txids: [],
-  //     address: '',
-  //   };
-
-  // console.log("LAMPORTS: ", marketLamports, eventLamports, requestLamports, orderLamports);
-  // // Calculate vault signer nonce
-  // const [vaultOwner, vaultOwnerNonce] = await getVaultOwnerAndNonce(
-  //   marketAccount.publicKey,
-  //   programId
-  // );
-
-  // if (!vaultOwnerNonce || !vaultOwner)
-  //   return {
-  //     status: 'failed',
-  //     txids: [],
-  //     address: '',
-  //   };
-
-  // console.log("VaultSignerNonce: ", vaultOwnerNonce, vaultOwner);
-
-  // // create vault account
-  // const vaultInstructions: web3.TransactionInstruction[] = [];
-  // const vaultSigners: web3.Signer[] = [baseVault, quoteVault];
-  // const vaultTransaction = new Transaction();
-  // vaultInstructions.push(
-  //   ...[
-  //     SystemProgram.createAccount({
-  //       fromPubkey: wallet.publicKey,
-  //       newAccountPubkey: baseVault.publicKey,
-  //       lamports: vaultLamports,
-  //       space: 165,
-  //       programId: TOKEN_PROGRAM_ID,
-  //     }),
-  //     SystemProgram.createAccount({
-  //       fromPubkey: wallet.publicKey,
-  //       newAccountPubkey: quoteVault.publicKey,
-  //       lamports: vaultLamports,
-  //       space: 165,
-  //       programId: TOKEN_PROGRAM_ID,
-  //     }),
-  //     createInitializeAccountInstruction(
-  //       baseVault.publicKey,
-  //       baseMint,
-  //       vaultOwner,
-  //     ),
-  //     createInitializeAccountInstruction(
-  //       quoteVault.publicKey,
-  //       quoteMint,
-  //       vaultOwner,
-  //     ),
-  //   ]
-  // );
-
-  // vaultTransaction.add(...vaultInstructions);
-
-  // try {
-  //   const blockHash = (await solConnection.getLatestBlockhash()).blockhash;
-  //   vaultTransaction.feePayer = wallet.publicKey;
-  //   vaultTransaction.recentBlockhash = blockHash;
-
-  //   // const signed = await wallet.signTransaction(vaultTransaction);
-  //   const signature = await wallet.sendTransaction(vaultTransaction, solConnection, { signers: vaultSigners });
-  //   await solConnection.confirmTransaction(signature);
-  //   const txHash = (await signature).toString();
-  //   console.log("vault signamture : ", txHash);
-
-  // } catch (error) {
-  //   console.error("Error creating market:", error);
-  //   return {
-  //     status: 'failed',
-  //     txids: [],
-  //     address: '',
-  //   };
-  // }
-
-  // // create market, account(market, event, request, bid, ask)
-  // const accountTransaction = new Transaction();
-  // const accountInstructions: web3.TransactionInstruction[] = []
-  // const accountSigners: web3.Signer[] = [marketAccount, requestQueue, eventQueue, bids, asks]
-
-  // accountInstructions.push(
-  //   ...[
-  //     SystemProgram.createAccount({
-  //       newAccountPubkey: marketAccount.publicKey,
-  //       fromPubkey: wallet.publicKey,
-  //       space: Market.getLayout(programId).span,
-  //       lamports: marketLamports,
-  //       programId: programId,
-  //     }),
-  //     SystemProgram.createAccount({
-  //       newAccountPubkey: requestQueue.publicKey,
-  //       fromPubkey: wallet.publicKey,
-  //       space: requestQueueLength,
-  //       lamports: requestLamports,
-  //       programId: programId,
-  //     }),
-  //     SystemProgram.createAccount({
-  //       newAccountPubkey: eventQueue.publicKey,
-  //       fromPubkey: wallet.publicKey,
-  //       space: eventQueueLength,
-  //       lamports: eventLamports,
-  //       programId: programId,
-  //     }),
-  //     SystemProgram.createAccount({
-  //       newAccountPubkey: bids.publicKey,
-  //       fromPubkey: wallet.publicKey,
-  //       space: orderbookLength,
-  //       lamports: orderLamports,
-  //       programId: programId,
-  //     }),
-  //     SystemProgram.createAccount({
-  //       newAccountPubkey: asks.publicKey,
-  //       fromPubkey: wallet.publicKey,
-  //       space: orderbookLength,
-  //       lamports: orderLamports,
-  //       programId: programId,
-  //     })
-  //   ]
-  // );
-
-  // accountTransaction.add(...accountInstructions);
-
-  // try {
-  //   const blockHash = (await solConnection.getLatestBlockhash()).blockhash;
-  //   accountTransaction.feePayer = wallet.publicKey;
-  //   accountTransaction.recentBlockhash = blockHash;
-
-  //   // const signed = await wallet.signTransaction(accountTransaction);
-  //   const signature = await wallet.sendTransaction(accountTransaction, solConnection, { signers: accountSigners });
-  //   await solConnection.confirmTransaction(signature);
-  //   const txHash = (await signature).toString();
-  //   console.log("account signamture : ", txHash);
-
-  // } catch (error) {
-  //   console.error("Error creating market:", error);
-  //   return {
-  //     status: 'failed',
-  //     txids: [],
-  //     address: '',
-  //   };
-  // }
-
-  // // create market, account(market, event, request, bid, ask)
-  // const marketTransaction = new Transaction();
-  // const marketInstructions: web3.TransactionInstruction[] = []
-  // // const marketSigners: web3.Signer[] = [marketAccount, requestQueue, eventQueue, bids, asks]
-
-  // marketInstructions.push(
-  //   ...[
-  //     DexInstructions.initializeMarket({
-  //       market: marketAccount.publicKey,
-  //       requestQueue: requestQueue.publicKey,
-  //       eventQueue: eventQueue.publicKey,
-  //       bids: bids.publicKey,
-  //       asks: asks.publicKey,
-  //       baseVault: baseVault.publicKey,
-  //       quoteVault: quoteVault.publicKey,
-  //       baseMint,
-  //       quoteMint,
-  //       baseLotSize: new BN(lotSize),
-  //       quoteLotSize: new BN(tickSize),
-  //       feeRateBps: 150, // Unused in v3
-  //       quoteDustThreshold: new BN(500), // Unused in v3
-  //       vaultSignerNonce: vaultOwnerNonce,
-  //       programId: programId,
-  //     })
-  //   ]
-  // );
-  // console.log("Accounts: ", marketAccount.publicKey.toBase58(), requestQueue.publicKey.toBase58(), eventQueue.publicKey.toBase58(), bids.publicKey.toBase58(), asks.publicKey.toBase58())
-
-  // marketTransaction.add(...marketInstructions);
-
-  // try {
-  //   const blockHash = (await solConnection.getLatestBlockhash()).blockhash;
-  //   marketTransaction.feePayer = wallet.publicKey;
-  //   marketTransaction.recentBlockhash = blockHash;
-  //   // const signed = await wallet.signTransaction(marketTransaction);
-  //   const signature = await wallet.sendTransaction(marketTransaction, solConnection, { maxRetries: 20, skipPreflight: true });
-  //   await solConnection.confirmTransaction(signature);
-  //   const txHash = (await signature).toString();
-  //   console.log("market signamture : ", txHash);
-
-  //   return {
-  //     status: 'success',
-  //     txids: [signature],
-  //     address: marketAccount.publicKey.toBase58(),
-  //   };
-  // } catch (error) {
-  //   console.error("Error creating market:", error);
-  //   return {
-  //     status: 'failed',
-  //     txids: [],
-  //     address: '',
-  //   };
-  // }
 }
 
-// export async function createOpenBookMarket(
-//   wallet: WalletContextState, 
-//   baseTokenAddress: string, 
-//   quoteTokenAddress: string,
-//   lotSize: number,
-//   tickSize: number
-// ) {
-//   const owner = wallet.publicKey;
-
-//   if (!owner || !wallet.signTransaction) {
-//     return {
-//       status: 'failed',
-//       txids: [],
-//       address: '',
-//     };
-//   }
-
-//   const raydium = await initSdk(wallet)
-
-//   const baseToken = await getToken(raydium, baseTokenAddress);
-//   const quoteToken = await getToken(raydium, quoteTokenAddress);
-
-//   // check mint info here: https://api-v3.raydium.io/mint/list
-//   // or get mint info by api: await raydium.token.getTokenInfo('mint address')
-
-//   try {
-//     const { execute, extInfo, transactions } = await raydium.marketV2.create({
-//       baseInfo: {
-//         mint: baseToken.mint,
-//         decimals: baseToken.decimals,
-//       },
-//       quoteInfo: {
-//         mint: quoteToken.mint,
-//         decimals: quoteToken.decimals,
-//       },
-//       lotSize: lotSize, // 1
-//       tickSize: tickSize, // 0.01
-//       dexProgramId: OPENBOOK_PROGRAM_ID, // OPEN_BOOK_PROGRAM, // devnet: DEVNET_PROGRAM_ID.OPENBOOK_MARKET
-//       txVersion,
-//       // optional: set up priority fee here
-//       computeBudgetConfig: {
-//         units: 600000,
-//         microLamports: 100000000,
-//       },
-//     })
-
-//     console.log(
-//       `create market total ${transactions.length} txs, market info: `,
-//       Object.keys(extInfo.address).reduce(
-//         (acc, cur) => ({
-//           ...acc,
-//           [cur]: extInfo.address[cur as keyof typeof extInfo.address].toBase58(),
-//         }),
-//         {}
-//       )
-//     )
-
-//     const txIds = await execute({
-//       // set sequentially to true means tx will be sent when previous one confirmed
-//       sequentially: true,
-//     })
-//     console.log('create market txIds:', txIds)
-
-//     return {
-//       status: 'success',
-//       txids: txIds.txIds,
-//       address: extInfo.address.marketId.toBase58(),
-//     };
-//   } catch (err) {
-//     return {
-//       status: 'failed',
-//       txids: [],
-//       address: ''
-//     };
-//   }
-// }
 export function calcNonDecimalValue(value: number, decimals: number): number {
   return Math.trunc(value * (Math.pow(10, decimals)))
 }
@@ -1201,143 +925,149 @@ export async function createAmmPool(
   }
 }
 
-// export async function createAmmPool(
-//   wallet: WalletContextState,
-//   baseTokenAddress: string,
-//   quoteTokenAddress: string,
-//   market: string,
-//   addBase: number,
-//   addQuote: number
-// ) {
-//   if (!wallet)
-//     return {
-//       status: 'failed',
-//       txid: '',
-//       address: '',
-//       lpMint: '',
-//       msg: 'invalid wallet',
-//     };
-//   if (!wallet.publicKey)
-//     return {
-//       status: 'failed',
-//       txid: '',
-//       address: '',
-//       lpMint: '',
-//       msg: 'invalid wallet',
-//     };
+type AllocationByPercentage = {
+  address: PublicKey;
+  percentage: number;
+};
 
-//   const raydium = await initSdk(wallet)
-//   const marketId = new PublicKey(market) // new PublicKey(`<you market id here>`)
+type AllocationByAmount = {
+  address: PublicKey;
+  amount: BN;
+};
 
-//   const baseToken = await getToken(raydium, baseTokenAddress);
-//   const quoteToken = await getToken(raydium, quoteTokenAddress);
+function fromAllocationsToAmount(lpAmount: BN, allocations: AllocationByPercentage[]): AllocationByAmount[] {
+  const sumPercentage = allocations.reduce((partialSum, a) => partialSum + a.percentage, 0);
+  if (sumPercentage === 0) {
+    throw Error('sumPercentage is zero');
+  }
 
-//   // create a pool in the newly created market
-//   const baseB = new BN(addBase)
-//   const baseD = new BN(10 ** baseToken.decimals);
-//   const quoteB = new BN(addQuote)
-//   const quoteD = new BN(10 ** quoteToken.decimals);
-//   const addBaseAmount = baseB.mul(baseD)
-//   const addQuoteAmount = quoteB.mul(quoteD);
+  let amounts: AllocationByAmount[] = [];
+  let sum = new BN(0);
+  for (let i = 0; i < allocations.length - 1; i++) {
+    const amount = lpAmount.mul(new BN(allocations[i].percentage)).div(new BN(sumPercentage));
+    sum = sum.add(amount);
+    amounts.push({
+      address: allocations[i].address,
+      amount,
+    });
+  }
+  // the last wallet get remaining amount
+  amounts.push({
+    address: allocations[allocations.length - 1].address,
+    amount: lpAmount.sub(sum),
+  });
+  return amounts;
+}
 
-//   // Check base token balance
-//   const baseTokenBalance = await getTokenBalance(wallet.publicKey, baseToken.mint);
-//   console.log("BASE------", baseTokenBalance, addBaseAmount.toNumber())
-//   if (!baseTokenBalance || addBaseAmount.cmp(new BN(baseTokenBalance)) == 1) {
-//     console.log("Please ensure that the base token amount is lower than your current token balance:");
-//     return {
-//       status: 'failed',
-//       txid: '',
-//       address: '',
-//       lpMint: '',
-//       msg: 'insufficient balance',
-//     };
-//   }
+export async function getPoolInfo(poolAddress: PublicKey) {
+  console.log("get pool info--------")
+  const pool = await AmmImpl.create(solConnection, poolAddress);
+  console.log("!!!!!!!!!!!!", pool)
+  const poolInfo = pool.poolInfo;
 
-//   // Check quote token balance
-//   const quoteTokenBalance = await getTokenBalance(wallet.publicKey, quoteToken.mint);
-//   console.log("QUOTE------", quoteTokenBalance, addQuoteAmount.toNumber())
-//   if (!quoteTokenBalance || addQuoteAmount.cmp(new BN(quoteTokenBalance)) == 1) {
-//     console.log("Please ensure that the quote token amount is lower than your current token balance:");
-//     return {
-//       status: 'failed',
-//       txid: '',
-//       address: '',
-//       lpMint: '',
-//       msg: 'insufficient balance',
-//     };
-//   }
+  console.log('Pool Address: %s', poolAddress.toString());
+  const poolTokenAddress = await pool.getPoolTokenMint();
+  console.log('Pool LP Token Mint Address: %s', poolTokenAddress.toString());
+  const LockedLpAmount = await pool.getLockedLpAmount();
+  console.log('Locked Lp Amount: %s', LockedLpAmount.toNumber());
+  const lpSupply = await pool.getLpSupply();
+  console.log('Pool LP Supply: %s \n', lpSupply.toNumber() / Math.pow(10, pool.decimals));
 
-//   // if you are confirmed your market info, don't have to get market info from rpc below
-//   // const marketBufferInfo = await raydium.connection.getAccountInfo(new PublicKey(marketId))
-//   // const { baseMint, quoteMint } = MARKET_STATE_LAYOUT_V3.decode(marketBufferInfo!.data)
+  console.log(
+    'tokenA %s Amount: %s ',
+    pool.tokenAMint.address,
+    poolInfo.tokenAAmount.toNumber() / Math.pow(10, pool.tokenAMint.decimals),
+  );
+  console.log(
+    'tokenB %s Amount: %s',
+    pool.tokenBMint.address,
+    poolInfo.tokenBAmount.toNumber() / Math.pow(10, pool.tokenBMint.decimals),
+  );
+  console.log('virtualPrice: %s', poolInfo.virtualPrice);
+  console.log('virtualPriceRaw to String: %s \n', poolInfo.virtualPriceRaw.toString());
+}
 
-//   // check mint info here: https://api-v3.raydium.io/mint/list
-//   // or get mint info by api: await raydium.token.getTokenInfo('mint address')
+export async function createPoolAndLockLiquidity(
+  wallet: WalletContextState,
+  tokenAMint: PublicKey,
+  tokenBMint: PublicKey,
+  tokenAAmount: BN,
+  tokenBAmount: BN,
+  config: PublicKey,
+  allocations: AllocationByPercentage[],
+) {
+  if (!wallet)
+    return { success: false }
+  if (!wallet.publicKey)
+    return { success: false }
 
-//   // const baseMintInfo = await raydium.token.getTokenInfo(baseMint)
-//   // const quoteMintInfo = await raydium.token.getTokenInfo(quoteMint)
+  try {
+    if (typeof exports === 'undefined') {
+      window.exports = {};
+    }
 
-//   try {
-//     const { execute, extInfo } = await raydium.liquidity.createPoolV4({
-//       programId: AMMV4_PROGRAM_ID, // devnet: DEVNET_PROGRAM_ID.AmmV4
-//       marketInfo: {
-//         marketId,
-//         programId: OPENBOOK_PROGRAM_ID, // devnet: DEVNET_PROGRAM_ID.OPENBOOK_MARKET
-//       },
-//       baseMintInfo: {
-//         mint: baseToken.mint, // baseMint,
-//         decimals: baseToken.decimals, // baseMintInfo.decimals, // if you know mint decimals here, can pass number directly
-//       },
-//       quoteMintInfo: {
-//         mint: quoteToken.mint, // quoteMint,
-//         decimals: quoteToken.decimals, // quoteMintInfo.decimals, // if you know mint decimals here, can pass number directly
-//       },
-//       baseAmount: addBaseAmount, // new BN(1000),
-//       quoteAmount: addQuoteAmount, // new BN(1000),
-//       startTime: new BN(0),
-//       ownerInfo: {
-//         useSOLBalance: true,
-//       },
-//       associatedOnly: false,
-//       txVersion,
-//       feeDestinationId: AMMV4_FEE_DESTINATION_ID, // FEE_DESTINATION_ID, // devnet: DEVNET_PROGRAM_ID.FEE_DESTINATION_ID
-//       // optional: set up priority fee here
-//       computeBudgetConfig: {
-//         units: 600000,
-//         microLamports: 10000000,
-//       },
-//     })
+    const programID = new PublicKey(AMM_PROGRAM_ID);
+    const poolPubkey = deriveConstantProductPoolAddressWithConfig(tokenAMint, tokenBMint, config, programID);
+    // Create the pool
+    console.log('create pool %s', poolPubkey);
 
-//     const { txId } = await execute()
-//     console.log(
-//       'amm pool created! txId: ',
-//       txId,
-//       ', poolKeys:',
-//       Object.keys(extInfo.address).reduce(
-//         (acc, cur) => ({
-//           ...acc,
-//           [cur]: extInfo.address[cur as keyof typeof extInfo.address].toBase58(),
-//         }),
-//         {}
-//       )
-//     )
+    let transactions = await AmmImpl.createPermissionlessConstantProductPoolWithConfig(
+      solConnection,
+      wallet.publicKey,
+      tokenAMint,
+      tokenBMint,
+      tokenAAmount,
+      tokenBAmount,
+      config,
+    );
+    for (const transaction of transactions) {
+      console.log("##########1");
+      const latestBlockHash = await solConnection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = await latestBlockHash.blockhash;
 
-//     return {
-//       status: 'success',
-//       txid: txId,
-//       address: extInfo.address.ammId.toBase58(),
-//       lpMint: extInfo.address.lpMint.toBase58()
-//     };
+      const signature = await wallet.sendTransaction(transaction, solConnection, { maxRetries: 20, skipPreflight: true });
+      console.log(
+        '\x1b[32m', //Green Text
+        `   Transaction Success!🎉`,
+        `\n    https://explorer.solana.com/tx/${signature}?cluster=devnet`
+      );
 
-//   } catch (err) {
-//     console.error('Pool creation failed:', err?.toString())
-//     return {
-//       status: 'failed',
-//       txid: '',
-//       address: '',
-//       lpMint: '',
-//       msg: err?.toString()
-//     };
-//   }
-// }
+      console.log("##########3");
+      await solConnection.confirmTransaction(signature, 'finalized');
+      console.log('transaction %s', signature);
+    }
+
+    console.log("here1");
+    // Create escrow and lock liquidity
+    const [lpMint] = PublicKey.findProgramAddressSync([Buffer.from(SEEDS.LP_MINT), poolPubkey.toBuffer()], programID);
+    console.log("here2", lpMint);
+    const payerPoolLp = await getAssociatedTokenAccount(lpMint, wallet.publicKey);
+    const payerPoolLpBalance = (await solConnection.getTokenAccountBalance(payerPoolLp)).value.amount;
+    console.log('payerPoolLpBalance %s', payerPoolLpBalance.toString());
+
+    let allocationByAmounts = fromAllocationsToAmount(new BN(payerPoolLpBalance), allocations);
+    const pool = await AmmImpl.create(solConnection, poolPubkey);
+    for (const allocation of allocationByAmounts) {
+      console.log('Lock liquidity %s', allocation.address.toString());
+      let transaction = await pool.lockLiquidity(allocation.address, allocation.amount, wallet.publicKey);
+
+      const latestBlockHash = await solConnection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = await latestBlockHash.blockhash;
+
+      const signature = await wallet.sendTransaction(transaction, solConnection, { maxRetries: 20, skipPreflight: true });
+      console.log(
+        '\x1b[32m', //Green Text
+        `   Lock Liquidity Transaction Success!🎉`,
+        `\n    https://explorer.solana.com/tx/${signature}?cluster=devnet`
+      );
+
+      console.log("##########3");
+      await solConnection.confirmTransaction(signature, 'finalized');
+      console.log('transaction %s', signature);
+    }
+
+    return { success: true, pool: poolPubkey.toString() }
+  } catch (error) {
+    return { success: false }
+  }
+}

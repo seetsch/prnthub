@@ -11,6 +11,7 @@ import PrivacyPolicy from "./pages/privacyPolicy";
 import MyVote from "./pages/MyLaunch.tsx";
 import TokenSetup from "./pages/TokenSetup.tsx";
 import LPsetup from "./pages/setupLP.tsx";
+import DLMM_setupLP from "./pages/DLMM_setupLP.tsx";
 import SetupMarket from "./pages/SetupMarket.tsx";
 import LaunchList from "./pages/LaunchList.tsx";
 import MemeCoinSubmit from "./pages/memeCoinSubmit.tsx";
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/tokenSetup" element={<TokenSetup />} />
                 <Route path="/tokenSubmit" element={<TokenSubmit />} />
                 <Route path="/setupLP" element={<LPsetup />} />
+                <Route path="/DLMM_setupLP" element={<DLMM_setupLP />} />
                 <Route path="/MemeCoinSubmit" element={<MemeCoinSubmit />} />
                 <Route path="/SetupMarket" element={<SetupMarket />} />
                 <Route path="/LaunchList" element={<LaunchList />} />

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Oval } from "react-loader-spinner";
 import { FaFileAlt, FaPlus, FaMinus } from "react-icons/fa";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Tooltip from "@mui/material/Tooltip";
 
 const MemecoinSubmit = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -87,10 +88,10 @@ const MemecoinSubmit = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="mb-2 text-5xl text-center font-primaryBold text-textclr2">
+        <h1 className="mb-2 text-5xl tracking-wide text-center font-primaryBold text-textclr2">
           Launch Your Memecoin
         </h1>
-        <p className="mb-8 text-xl text-center font-primaryRegular text-textclr2/70">
+        <p className="mb-8 text-xl tracking-tight text-center font-primaryRegular text-textclr2/70">
           Submit your memecoin details and join the Meteora ecosystem!
         </p>
 
@@ -110,41 +111,55 @@ const MemecoinSubmit = () => {
               placeholder="Enter token name"
               required
             />
-            <InputField
-              label="Symbol"
-              name="ticker"
-              value={formData.ticker}
-              onChange={handleChange}
-              placeholder="Enter symbol"
-              required
-            />
-            <div>
-              <label className="block mb-2 text-md font-primaryRegular text-textclr2">
-                How much SOL to allocate to the pool
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute flex items-center pointer-events-none left-3">
-                  <img
-                    src="https://solana.com/_next/static/media/solanaLogoMark.17260911.svg"
-                    alt="Solana Logo"
-                    width={24}
-                    height={24}
-                  />
-                  <span className="ml-2 font-primaryBold text-textclr2">
-                    SOL
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  name="solAmount"
-                  value={formData.solAmount}
+            <Tooltip
+              title="The ticker symbol for your token, typically 3-4 characters long Eg: $PRNT"
+              arrow
+              placement="top"
+            >
+              <div>
+                <InputField
+                  label="Symbol"
+                  name="ticker"
+                  value={formData.ticker}
                   onChange={handleChange}
-                  placeholder="0.00"
-                  className="w-full py-3 pl-24 pr-4 border border-gray-300 rounded-lg text-textclr2 focus:outline-none focus:ring-2 focus:ring-textclr2 bg-white/20 placeholder-textclr2/50"
+                  placeholder="Enter symbol"
                   required
                 />
               </div>
-            </div>
+            </Tooltip>
+            <Tooltip
+              title="The amount of SOL you want to provide as initial liquidity for your token"
+              arrow
+              placement="top"
+            >
+              <div>
+                <label className="block mb-2 text-md font-primaryRegular text-textclr2">
+                  How much SOL to allocate to the pool
+                </label>
+                <div className="relative flex items-center">
+                  <div className="absolute flex items-center pointer-events-none left-3">
+                    <img
+                      src="https://solana.com/_next/static/media/solanaLogoMark.17260911.svg"
+                      alt="Solana Logo"
+                      width={24}
+                      height={24}
+                    />
+                    <span className="ml-2 font-primaryBold text-textclr2">
+                      SOL
+                    </span>
+                  </div>
+                  <input
+                    type="number"
+                    name="solAmount"
+                    value={formData.solAmount}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    className="w-full py-3 pl-24 pr-4 border border-gray-300 rounded-lg text-textclr2 focus:outline-none focus:ring-2 focus:ring-textclr2 bg-white/20 placeholder-textclr2/50"
+                    required
+                  />
+                </div>
+              </div>
+            </Tooltip>
             <div>
               <label className="block mb-2 text-md font-primaryRegular text-textclr2">
                 Token Icon
@@ -279,7 +294,7 @@ const MemecoinSubmit = () => {
 
           <motion.button
             type="submit"
-            className="px-8 py-3 mt-8 transition-all duration-300 border rounded-full shadow-lg font-primaryBold border-lime-500 text-textclr bg-btnbg/50 hover:bg-btnbg/60 hover:border-btnbg hover:text-btnbg focus:outline-none focus:ring-2 focus:ring-btnbg focus:ring-offset-2"
+            className="px-8 py-3 mt-8 transition-all duration-300 border rounded-full shadow-lg font-primaryRegular border-lime-500 text-textclr bg-btnbg/50 hover:bg-btnbg/60 hover:border-btnbg hover:text-btnbg focus:outline-none focus:ring-2 focus:ring-btnbg focus:ring-offset-2"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

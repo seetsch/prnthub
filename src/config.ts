@@ -3,7 +3,7 @@ type NetworkType = 'mainnet' | 'devnet';
 import { PublicKey } from "@solana/web3.js";
 
 export const API_URL = "https://api.prnthub.com";
-export const NETWORK: NetworkType = "mainnet";
+export const NETWORK: NetworkType = "devnet";
 export const RPC_ENDPOINT =
   "https://mainnet.helius-rpc.com/?api-key=f1d5fa66-a4cd-4cb6-a0c3-49c3500e7c0f";
 export const ADMIN_WALLET_ADDRESS = new PublicKey(

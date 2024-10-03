@@ -66,6 +66,11 @@ const Navbar = () => {
                       <WavesIcon /> LP Funding
                     </Link>
                   </li>
+                  <li>
+                    <Link to="/DLMM_setupLP">
+                      <WavesIcon /> DLMM LP Funding
+                    </Link>
+                  </li>
                 </ul>
               </li>
 

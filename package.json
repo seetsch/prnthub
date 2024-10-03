@@ -13,6 +13,7 @@
     "@bundlr-network/client": "^0.7.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@mercurial-finance/dynamic-amm-sdk": "^1.1.2",
     "@metaplex-foundation/mpl-token-metadata": "^2.5.2",
     "@mui/icons-material": "^5.15.19",
     "@mui/material": "^5.15.19",
